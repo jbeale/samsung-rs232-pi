@@ -1,0 +1,20 @@
+[Unit]
+Description=Samsung RS-232 (Ex-Link) HTTP control API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=admin
+Group=dialout
+WorkingDirectory=/opt/samsung-rs232
+Environment=PYTHONUNBUFFERED=1
+Environment=EXLINK_PORT=/dev/ttyUSB0
+ExecStart=/opt/samsung-rs232/venv/bin/python /opt/samsung-rs232/exlink_server.py
+Restart=always
+RestartSec=2
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
