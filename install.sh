@@ -33,6 +33,14 @@ if ! python3 -m venv --help >/dev/null 2>&1; then
   apt-get update -qq && apt-get install -y python3-venv
 fi
 
+# --- retire the old CEC service if present (frees port 8080) ---
+if systemctl list-unit-files cec-api.service >/dev/null 2>&1 \
+   && systemctl cat cec-api.service >/dev/null 2>&1; then
+  echo ">> Found old 'cec-api' service -- stopping and disabling it"
+  systemctl stop cec-api.service || true
+  systemctl disable cec-api.service || true
+fi
+
 # --- serial port access ---
 usermod -aG dialout "$SERVICE_USER" || true
 
@@ -65,9 +73,14 @@ sleep 2
 echo
 echo ">> Status:"
 systemctl --no-pager --lines=0 status "$SERVICE_NAME" | head -5 || true
+# --- arm the hardware watchdog (unless SKIP_WATCHDOG=1) ---
+if [ "${SKIP_WATCHDOG:-0}" != "1" ] && [ -f "$SCRIPT_DIR/setup-watchdog.sh" ]; then
+  echo
+  echo ">> Arming hardware watchdog..."
+  bash "$SCRIPT_DIR/setup-watchdog.sh" || echo "!! watchdog setup failed (continuing)"
+fi
+
 echo
 echo ">> Done. Test it:"
 echo "     curl http://localhost:8080/"
 echo "     curl http://localhost:8080/on"
-echo
-echo ">> Tip: also run ./setup-watchdog.sh to auto-reboot the Pi if it ever hangs."
