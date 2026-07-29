@@ -68,6 +68,16 @@ sudo ./setup-watchdog.sh
 
 This enables the SoC hardware watchdog via systemd (`RuntimeWatchdogSec=14`) and reboots on kernel panic. See [the script](setup-watchdog.sh) for details. (Note: the Pi's hardware watchdog maxes out at ~15s; it can't be set longer.)
 
+### Logo splash on the Pi's HDMI output (optional)
+
+The Pi's own HDMI output goes to a spare input on the TV. By default that shows a Linux login console. To display a full-screen logo there instead:
+
+```bash
+sudo ./setup-logo.sh /path/to/logo.png
+```
+
+This paints the PNG straight to the framebuffer at boot via a tiny `fbi` oneshot service — no desktop, no browser, negligible load on a Pi Zero 2 W. It also disables the console login on `tty1` so nothing overwrites the image (SSH is unaffected; reversible). Combined with `/input/<n>`, the logo makes a handy branded "holding" screen you can flip the TV to. Use a PNG at the panel's native resolution with the artwork centered on a solid background so any letterboxing blends in.
+
 ## HTTP API
 
 All endpoints are `GET` for easy use from a browser, Bitfocus Companion, Home Assistant, etc.
